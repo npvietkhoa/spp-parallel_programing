@@ -2,7 +2,7 @@
 Parallelization and optimization of three programs using OpenMP library on multi-core architecture system.
 
 ## _SpMxV (Sparse Matrix-Vector Multiplication)_
-Using CRS - Compressed Row Storage to save the matrices.
+Using _CRS_ - Compressed Row Storage to save the matrices.
 
 Implement (and tested) on system specs:
 <details>
