@@ -53,14 +53,23 @@ void init_centroids(point_t *centroids, int k) {
     }
 }
 
-void k_means(uint8_t niters, point_t *points, point_t *centroids, uint32_t *assignment, point_t *memory, uint32_t n, uint16_t k, uint32_t* count, double *sum_x, double *sum_y) {
+void k_means(uint8_t niters, point_t *points, 
+            point_t *centroids, uint32_t *assignment, 
+            point_t *memory, uint32_t n, 
+            uint16_t k, uint32_t* count, 
+            double *sum_x, double *sum_y) {
+
     for (uint8_t iter = 0; iter < niters; ++iter) {
         // determine nearest centroids
         #pragma omp target teams distribute parallel for
         for (uint32_t i = 0; i < n; ++i) {
             double optimal_dist = DBL_MAX;
             for (uint16_t j = 0; j < k; ++j) {
-                double dist = (points[i].x - centroids[j].x)*(points[i].x - centroids[j].x) + (points[i].y - centroids[j].y)*(points[i].y - centroids[j].y);
+
+                // using normal arithmetic operators without square root (logic is still correct)
+                // to reduce calculation workload
+                double dist = (points[i].x - centroids[j].x)*(points[i].x - centroids[j].x) + 
+                              (points[i].y - centroids[j].y)*(points[i].y - centroids[j].y);
                 if (dist < optimal_dist) {
                     optimal_dist = dist;
                     assignment[i] = j;
@@ -69,16 +78,15 @@ void k_means(uint8_t niters, point_t *points, point_t *centroids, uint32_t *assi
         }
 
         #pragma omp target update from(assignment[0:n])
-
         for (uint16_t j = 0; j < k; ++j) {
             count[j] = 0;
-            sum_x [j] = 0;
+            sum_x[j] = 0;
             sum_y[j] = 0;
         }
 
         for (uint32_t i = 0; i < n; ++i) {
             count[assignment[i]]++;
-            sum_x [assignment[i]]+= points[i].x;
+            sum_x[assignment[i]]+= points[i].x;
             sum_y[assignment[i]] += points[i].y;
         }
 
